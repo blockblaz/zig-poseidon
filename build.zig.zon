@@ -1,0 +1,13 @@
+.{
+    .name = .zig_poseidon,
+    .version = "0.1.0",
+    .min_zig_version = "0.14.0",
+    .paths=.{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE",
+        "README.md",
+    },
+    .fingerprint=0x4cb45c65b0bab547,
+}

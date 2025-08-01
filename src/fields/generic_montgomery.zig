@@ -10,6 +10,8 @@ pub fn MontgomeryField31(comptime modulus: u32) type {
     std.debug.assert(modulus * modulus_prime % R == R - 1);
 
     return struct {
+        const Self = @This();
+        pub const PrimeModulus = modulus;
         pub const FieldElem = u32;
         pub const MontFieldElem = struct {
             value: u32,

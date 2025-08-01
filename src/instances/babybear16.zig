@@ -1,6 +1,6 @@
 const std = @import("std");
 const poseidon2 = @import("../poseidon2/poseidon2.zig");
-const babybear = @import("../fields/babybear/montgomery.zig").MontgomeryField;
+pub const babybear = @import("../fields/babybear/montgomery.zig").MontgomeryField;
 
 const WIDTH = 16;
 const EXTERNAL_ROUNDS = 8;
@@ -26,7 +26,7 @@ const DIAGONAL = [WIDTH]u32{
     parseHex("5231c802"),
 };
 
-const Poseidon2BabyBear = poseidon2.Poseidon2(
+pub const Poseidon2BabyBear = poseidon2.Poseidon2(
     babybear,
     WIDTH,
     INTERNAL_ROUNDS,
