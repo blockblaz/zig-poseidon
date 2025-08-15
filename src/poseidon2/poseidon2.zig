@@ -158,6 +158,13 @@ pub fn Poseidon2(
                     F.mul(&res, res, e);
                     break :blk res;
                 },
+                3 => blk: {
+                    var e_squared: F.MontFieldElem = undefined;
+                    F.square(&e_squared, e);
+                    var res: F.MontFieldElem = undefined;
+                    F.mul(&res, e_squared, e);
+                    break :blk res;
+                },
                 else => @compileError("sbox degree not supported"),
             };
         }

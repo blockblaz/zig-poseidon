@@ -15,6 +15,20 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    const koalabear16_module = b.addModule("poseidon-koalabear", .{
+        .root_source_file = b.path("src/instances/koalabear16.zig"),
+        .imports = &.{
+            .{ .name = "poseidon", .module = poseidon_module },
+        },
+    });
+
+    const koalabear24_module = b.addModule("poseidon-koalabear24", .{
+        .root_source_file = b.path("src/instances/koalabear24.zig"),
+        .imports = &.{
+            .{ .name = "poseidon", .module = poseidon_module },
+        },
+    });
+
     const lib = b.addStaticLibrary(.{
         .name = "zig-poseidon",
         .root_source_file = .{ .cwd_relative = "src/main.zig" },
@@ -24,6 +38,8 @@ pub fn build(b: *std.Build) void {
 
     lib.root_module.addImport("poseidon", poseidon_module);
     lib.root_module.addImport("poseidon-babybear", babybear_module);
+    lib.root_module.addImport("poseidon-koalabear16", koalabear16_module);
+    lib.root_module.addImport("poseidon-koalabear24", koalabear24_module);
     b.installArtifact(lib);
 
     const main_tests = b.addTest(.{

@@ -1,0 +1,1 @@
+pub const MontgomeryField = @import("../generic_montgomery.zig").MontgomeryField31((1 << 31) - (1<<24) + 1);
