@@ -134,7 +134,7 @@ zig build test
 
 ## Project Motivation
 
-This repository was created primarily to support the upcoming Ethereum Beam chain. The KoalaBear field was added to enable compatibility with Rust's hash-sig implementation and plonky3.
+This repository was created primarily to support the upcoming Ethereum Lean chain. The KoalaBear field was added to enable compatibility with Rust's hash-sig implementation and plonky3.
 
 ## Compatibility
 
