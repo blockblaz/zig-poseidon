@@ -36,11 +36,18 @@ Add `zig-poseidon` as a dependency in your `build.zig.zon`:
 ```zig
 .dependencies = .{
     .poseidon = .{
-        .url = "https://github.com/jsign/zig-poseidon/archive/<commit-hash>.tar.gz",
-        .hash = "<hash>",
+        .url = "https://github.com/blockblaz/zig-poseidon/archive/v0.2.0.tar.gz",
+        .hash = "122...", // Get hash by running: zig fetch --save <url>
     },
 },
 ```
+
+**Get the correct hash:**
+```bash
+zig fetch --save https://github.com/blockblaz/zig-poseidon/archive/v0.2.0.tar.gz
+```
+
+**Latest version:** See [Releases](https://github.com/blockblaz/zig-poseidon/releases) for the most recent version.
 
 ## Usage
 
@@ -149,6 +156,39 @@ Both implementations include tests ensuring the naive and optimized (Montgomery)
 - Add support for the sponge construction
 - Add benchmarks and performance optimizations
 - Add more S-Box degrees as needed
+
+## Versioning and Releases
+
+This project follows [Semantic Versioning](https://semver.org/). 
+
+**Current version:** `0.2.0`
+
+### Release Process
+
+Releases are automatically created when Pull Requests are merged to `main`/`master`:
+
+1. Update the `VERSION` file with the new version number
+2. Create a PR with the version bump
+3. After merge, the workflow automatically:
+   - Creates a Git tag (e.g., `v0.2.0`)
+   - Generates a changelog
+   - Creates a GitHub Release
+   - Calculates the tarball hash for dependencies
+
+See [RELEASING.md](RELEASING.md) for detailed release instructions.
+
+### Using Specific Versions
+
+Always pin to a specific version in your `build.zig.zon`:
+
+```zig
+.poseidon = .{
+    .url = "https://github.com/blockblaz/zig-poseidon/archive/v0.2.0.tar.gz",
+    .hash = "122...", // specific hash for v0.2.0
+},
+```
+
+**Find releases:** [GitHub Releases](https://github.com/blockblaz/zig-poseidon/releases)
 
 ## License
 
