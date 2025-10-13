@@ -4,15 +4,24 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    _ = b.addModule("poseidon", .{
-        .root_source_file = .{
-            .cwd_relative = "src/poseidon2/poseidon2.zig",
-        },
+    // Generic Poseidon2 module
+    _ = b.addModule("poseidon2", .{
+        .root_source_file = b.path("src/poseidon2/poseidon2.zig"),
+    });
+
+    // BabyBear16 instance
+    _ = b.addModule("babybear16", .{
+        .root_source_file = b.path("src/instances/babybear16.zig"),
+    });
+
+    // KoalaBear16 instance (compatible with Rust hash-sig)
+    _ = b.addModule("koalabear16", .{
+        .root_source_file = b.path("src/instances/koalabear16.zig"),
     });
 
     const lib = b.addStaticLibrary(.{
         .name = "zig-poseidon",
-        .root_source_file = .{ .cwd_relative = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -20,7 +29,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(lib);
 
     const main_tests = b.addTest(.{
-        .root_source_file = .{ .cwd_relative = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
