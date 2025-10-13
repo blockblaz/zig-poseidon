@@ -13,7 +13,7 @@ This implementation provides:
   - S-Box degree: 7
   - Internal rounds: 13
   - External rounds: 8
-  - Use case: Ethereum Beam chain
+  - Use case: Ethereum Lean chain
 
 - **KoalaBear field** (p = 2³¹ - 2²⁴ + 1 = 0x7f000001)  
   - Width: 16 elements
@@ -128,7 +128,7 @@ zig build test
 | **S-Box Degree** | 7 | 3 |
 | **Internal Rounds** | 13 | 20 |
 | **External Rounds** | 8 | 8 |
-| **Compatible With** | Ethereum Beam | plonky3, Rust hash-sig |
+| **Compatible With** | Ethereum Lean | plonky3, Rust hash-sig |
 
 **Important:** Different fields produce completely different hash outputs! Choose the field that matches your target system.
 
