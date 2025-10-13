@@ -12,4 +12,3 @@ pub const Poseidon2KoalaBear = koalabear16.Poseidon2KoalaBear;
 test {
     @import("std").testing.refAllDecls(@This());
 }
-
