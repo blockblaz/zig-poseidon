@@ -148,7 +148,16 @@ pub fn Poseidon2(
 
         inline fn sbox(e: F.MontFieldElem) F.MontFieldElem {
             return switch (sbox_degree) {
+                3 => blk: {
+                    // x^3 = x * x * x = (x^2) * x
+                    var e_squared: F.MontFieldElem = undefined;
+                    F.square(&e_squared, e);
+                    var res: F.MontFieldElem = undefined;
+                    F.mul(&res, e_squared, e);
+                    break :blk res;
+                },
                 7 => blk: {
+                    // x^7 = x^4 * x^2 * x
                     var e_squared: F.MontFieldElem = undefined;
                     F.square(&e_squared, e);
                     var e_forth: F.MontFieldElem = undefined;
