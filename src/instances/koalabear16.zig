@@ -29,7 +29,7 @@ const DIAGONAL = [WIDTH]u32{
     parseHex("7fffff7f"), // -1/2^24
 };
 
-const Poseidon2KoalaBear = poseidon2.Poseidon2(
+pub const Poseidon2KoalaBear = poseidon2.Poseidon2(
     koalabear,
     WIDTH,
     INTERNAL_ROUNDS,

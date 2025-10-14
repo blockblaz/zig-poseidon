@@ -31,7 +31,7 @@ jobs:
           zig-version: 0.14.0
 
       - name: Lint
-        run: zig fmt --check src/*.zig
+        run: zig fmt --check src/
 
   test:
     runs-on: ubuntu-latest
