@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const modulus = 15 * (1 << 27) + 1;
+pub const MODULUS = modulus;
 pub const FieldElem = u32;
 pub const MontFieldElem = u32;
 

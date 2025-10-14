@@ -11,6 +11,7 @@ pub fn MontgomeryField31(comptime modulus: u32) type {
 
     return struct {
         pub const FieldElem = u32;
+        pub const MODULUS = modulus;
         pub const MontFieldElem = struct {
             value: u32,
         };
