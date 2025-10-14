@@ -165,15 +165,21 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ### Release Process
 
-Releases are automatically created when Pull Requests are merged to `main`/`master`:
+Releases are automatically created when Pull Requests from `main` are merged to the `release` branch:
 
-1. Update the `VERSION` file with the new version number
-2. Create a PR with the version bump
-3. After merge, the workflow automatically:
+1. Develop and merge features to `main` branch
+2. When ready to release, update the `VERSION` file on `main`
+3. Create a PR from `main` to `release` branch
+4. After merge to `release`, the workflow automatically:
    - Creates a Git tag (e.g., `v0.2.0`)
    - Generates a changelog
    - Creates a GitHub Release
    - Calculates the tarball hash for dependencies
+
+**Why a release branch?**
+- ✅ Control when releases happen
+- ✅ Not every feature triggers a release
+- ✅ Batch multiple features into one release
 
 See [RELEASING.md](RELEASING.md) for detailed release instructions.
 

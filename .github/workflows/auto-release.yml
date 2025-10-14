@@ -1,18 +1,17 @@
-name: Auto Release on PR Merge
+name: Auto Release on Release Branch
 
 on:
   pull_request:
     types: [closed]
     branches:
-      - main
-      - master
+      - release
 
 permissions:
   contents: write
 
 jobs:
   auto-release:
-    # Only run if PR was merged (not just closed)
+    # Only run if PR was merged to release branch (not just closed)
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     
