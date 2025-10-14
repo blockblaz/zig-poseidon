@@ -1,0 +1,160 @@
+name: Auto Release on Release Branch
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - release
+
+permissions:
+  contents: write
+
+jobs:
+  auto-release:
+    # Only run if PR was merged to release branch (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for versioning
+      
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.14.1
+      
+      - name: Read VERSION file
+        id: get_version
+        run: |
+          VERSION=$(cat VERSION)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git rev-parse "v${{ steps.get_version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Tag v${{ steps.get_version.outputs.version }} already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag v${{ steps.get_version.outputs.version }} does not exist"
+          fi
+      
+      - name: Run tests
+        if: steps.check_tag.outputs.exists == 'false'
+        run: zig build test
+      
+      - name: Build library
+        if: steps.check_tag.outputs.exists == 'false'
+        run: zig build
+      
+      - name: Update build.zig.zon version
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          sed -i "s/\.version = \".*\"/\.version = \"$VERSION\"/" build.zig.zon
+      
+      - name: Generate changelog
+        if: steps.check_tag.outputs.exists == 'false'
+        id: changelog
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "## 🎉 Initial Release" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "First release of zig-poseidon - A Zig implementation of Poseidon2 hash function." >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            echo "### Features" >> CHANGELOG.md
+            echo "- BabyBear field (p = 2³¹ - 2²⁷ + 1) for Ethereum Lean chain" >> CHANGELOG.md
+            echo "- KoalaBear field (p = 2³¹ - 2²⁴ + 1) for plonky3 and Rust hash-sig compatibility" >> CHANGELOG.md
+            echo "- Generic Montgomery form implementation" >> CHANGELOG.md
+            echo "- Compression mode for Merkle Trees" >> CHANGELOG.md
+            echo "- Comprehensive test suite" >> CHANGELOG.md
+          else
+            echo "## Changes since $PREV_TAG" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log "$PREV_TAG"..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          fi
+          
+          cat CHANGELOG.md
+      
+      - name: Create Git tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.get_version.outputs.tag }}" -m "Release ${{ steps.get_version.outputs.tag }}"
+          git push origin "${{ steps.get_version.outputs.tag }}"
+      
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag }}
+          name: Release ${{ steps.get_version.outputs.tag }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Calculate tarball hash
+        if: steps.check_tag.outputs.exists == 'false'
+        id: tarball_hash
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          TARBALL_URL="https://github.com/${{ github.repository }}/archive/v${VERSION}.tar.gz"
+          
+          # Download and calculate hash
+          curl -L "$TARBALL_URL" -o release.tar.gz
+          HASH=$(zig fetch release.tar.gz 2>&1 | grep -o '12[0-9a-f]*' || echo "")
+          
+          if [ -z "$HASH" ]; then
+            echo "⚠️ Could not calculate hash automatically"
+            echo "📦 Users can get the hash by running:"
+            echo "   zig fetch --save $TARBALL_URL"
+          else
+            echo "hash=$HASH" >> $GITHUB_OUTPUT
+            echo "📦 Tarball hash: $HASH"
+          fi
+      
+      - name: Post release information
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🎉 Release ${{ steps.get_version.outputs.tag }} created successfully!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "📦 To use this release in your project's build.zig.zon:"
+          echo ""
+          echo ".dependencies = .{"
+          echo "    .poseidon = .{"
+          echo "        .url = \"https://github.com/${{ github.repository }}/archive/${{ steps.get_version.outputs.tag }}.tar.gz\","
+          echo "        .hash = \"${{ steps.tarball_hash.outputs.hash }}\","
+          echo "    },"
+          echo "},"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      
+      - name: Skip release (tag exists)
+        if: steps.check_tag.outputs.exists == 'true'
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "⚠️  Skipping release - tag ${{ steps.get_version.outputs.tag }} already exists"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "To create a new release:"
+          echo "1. Update the VERSION file with a new version number"
+          echo "2. Commit the change"
+          echo "3. Create and merge a PR"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
