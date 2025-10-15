@@ -2,6 +2,7 @@ const std = @import("std");
 
 // KoalaBear field: p = 2^31 - 2^24 + 1 = 127 * 2^24 + 1 = 2130706433 = 0x7f000001
 const modulus = 127 * (1 << 24) + 1;
+pub const MODULUS = modulus;
 pub const FieldElem = u32;
 pub const MontFieldElem = u32;
 

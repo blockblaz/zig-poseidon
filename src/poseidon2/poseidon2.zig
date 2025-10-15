@@ -134,15 +134,34 @@ pub fn Poseidon2(
         }
 
         inline fn mulInternal(state: *State) void {
-            // Calculate (1, ...) * state.
-            var state_sum = state[0];
-            inline for (1..width) |i| {
-                F.add(&state_sum, state_sum, state[i]);
+            // Match plonky3's generic_internal_linear_layer implementation
+            // Calculate part_sum = sum of state[1..] (excluding state[0])
+            var part_sum = state[1];
+            inline for (2..width) |i| {
+                F.add(&part_sum, part_sum, state[i]);
             }
-            // Add corresponding diagonal factor.
-            inline for (0..state.len) |i| {
+
+            // Calculate full_sum = part_sum + state[0]
+            var full_sum = part_sum;
+            F.add(&full_sum, full_sum, state[0]);
+
+            // Special handling for state[0]: state[0] = part_sum - state[0]
+            // Compute negation in normal form: -x = P - x (where P is the modulus)
+            const state_0_normal = F.toNormal(state[0]);
+            const neg_state_0_normal = F.MODULUS - state_0_normal;
+            var neg_state_0: F.MontFieldElem = undefined;
+            F.toMontgomery(&neg_state_0, neg_state_0_normal);
+            var new_state_0 = part_sum;
+            F.add(&new_state_0, new_state_0, neg_state_0);
+
+            // Apply diagonal to state[0] first
+            F.mul(&state[0], new_state_0, int_diagonal[0]);
+            F.add(&state[0], state[0], full_sum);
+
+            // Apply diagonal to state[1..] (as per plonky3's internal_layer_mat_mul)
+            inline for (1..width) |i| {
                 F.mul(&state[i], state[i], int_diagonal[i]);
-                F.add(&state[i], state[i], state_sum);
+                F.add(&state[i], state[i], full_sum);
             }
         }
 
