@@ -30,7 +30,7 @@ pub fn Poseidon2(
         pub const State = [width]F.MontFieldElem;
 
         pub fn compress(comptime output_len: comptime_int, input: [width]F.FieldElem) [output_len]F.FieldElem {
-            assert(output_len <= width, "output_len must be <= width");
+            assert(output_len <= width);
 
             var state: State = undefined;
             inline for (0..width) |i| {
