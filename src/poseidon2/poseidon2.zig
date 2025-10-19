@@ -30,7 +30,7 @@ pub fn Poseidon2(
         pub const State = [width]F.MontFieldElem;
 
         pub fn compress(comptime output_len: comptime_int, input: [width]F.FieldElem) [output_len]F.FieldElem {
-            assert(output_len <= width, "output_len must be <= width");
+            assert(output_len <= width);
 
             var state: State = undefined;
             inline for (0..width) |i| {
@@ -38,10 +38,16 @@ pub fn Poseidon2(
             }
             permutation(&state);
             inline for (0..width) |i| {
-                F.add(&state[i], state[i], input[i]);
-                F.fromMontgomery(&state[i], state[i]);
+                var input_mont: F.MontFieldElem = undefined;
+                F.toMontgomery(&input_mont, input[i]);
+                F.add(&state[i], state[i], input_mont);
             }
-            return state[0..output_len];
+
+            var result: [output_len]F.FieldElem = undefined;
+            inline for (0..output_len) |i| {
+                result[i] = F.toNormal(state[i]);
+            }
+            return result;
         }
 
         pub fn permutation(state: *State) void {
