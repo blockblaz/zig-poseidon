@@ -30,18 +30,25 @@ pub fn Poseidon2(
         pub const State = [width]F.MontFieldElem;
 
         pub fn compress(comptime output_len: comptime_int, input: [width]F.FieldElem) [output_len]F.FieldElem {
-            assert(output_len <= width, "output_len must be <= width");
+            if (output_len > width) {
+                @compileError("output_len must be <= width");
+            }
 
             var state: State = undefined;
             inline for (0..width) |i| {
                 F.toMontgomery(&state[i], input[i]);
             }
             permutation(&state);
+            var output: [width]F.FieldElem = undefined;
             inline for (0..width) |i| {
                 F.add(&state[i], state[i], input[i]);
-                F.fromMontgomery(&state[i], state[i]);
+                F.fromMontgomery(&output[i], state[i]);
             }
-            return state[0..output_len];
+            var result: [output_len]F.FieldElem = undefined;
+            inline for (0..output_len) |i| {
+                result[i] = output[i];
+            }
+            return result;
         }
 
         pub fn permutation(state: *State) void {
@@ -78,20 +85,27 @@ pub fn Poseidon2(
             if (width % 4 != 0) {
                 @compileError("only widths multiple of 4 are supported");
             }
-            mulM4(state);
 
-            // Calculate the "base" result as if we're doing
-            // circ(M4, M4, ...) * state.
-            var base = std.mem.zeroes([4]F.MontFieldElem);
-            inline for (0..4) |i| {
-                inline for (0..width / 4) |j| {
-                    F.add(&base[i], base[i], state[(j << 2) + i]);
-                }
-            }
-            // base has circ(M4, M4, ...)*state, add state now
-            // to add the corresponding extra M4 "through the diagonal".
+            // FIXED: Use proper circulant MDS matrix multiplication
+            // The MDS matrix is circulant, so we need to use circulant indexing
+            var new_state: State = undefined;
+
             for (0..width) |i| {
-                F.add(&state[i], state[i], base[i & 0b11]);
+                var sum: F.MontFieldElem = undefined;
+                F.toMontgomery(&sum, 0); // Initialize to zero
+
+                for (0..width) |j| {
+                    const diag_idx = (width + j - i) % width; // Circulant indexing
+                    var temp: F.MontFieldElem = undefined;
+                    F.mul(&temp, state[j], int_diagonal[diag_idx]);
+                    F.add(&sum, sum, temp);
+                }
+                new_state[i] = sum;
+            }
+
+            // Copy the result back to state
+            for (0..width) |i| {
+                state[i] = new_state[i];
             }
         }
 
