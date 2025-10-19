@@ -37,7 +37,6 @@ pub fn Poseidon2(
                 F.toMontgomery(&state[i], input[i]);
             }
             permutation(&state);
-            var output: [width]F.FieldElem = undefined;
             inline for (0..width) |i| {
                 var input_mont: F.MontFieldElem = undefined;
                 F.toMontgomery(&input_mont, input[i]);
