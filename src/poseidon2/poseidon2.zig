@@ -78,11 +78,12 @@ pub fn Poseidon2(
         }
 
         inline fn mulExternal(state: *State) void {
-            if (width < 8) {
-                @compileError("only widths >= 8 are supported");
+            if (width < 3) {
+                @compileError("only widths >= 3 are supported");
             }
-            if (width % 4 != 0) {
-                @compileError("only widths multiple of 4 are supported");
+            // Support widths 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, etc.
+            if (width >= 8 and width % 4 != 0) {
+                @compileError("for widths >= 8, only widths multiple of 4 are supported");
             }
 
             // FIXED: Use proper circulant MDS matrix multiplication
