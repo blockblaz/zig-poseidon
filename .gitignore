@@ -16,3 +16,13 @@ zig-out/
 /build/
 /build-*/
 /docgen_tmp/
+
+# macOS
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

@@ -7,5 +7,5 @@ test "BabyBear16" {
 
 test "KoalaBear16" {
     std.testing.log_level = .debug;
-    _ = @import("instances/koalabear16.zig");
+    _ = @import("instances/koalabear16_generic.zig");
 }

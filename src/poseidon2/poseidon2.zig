@@ -78,26 +78,34 @@ pub fn Poseidon2(
         }
 
         inline fn mulExternal(state: *State) void {
-            if (width < 8) {
-                @compileError("only widths >= 8 are supported");
+            if (width < 3) {
+                @compileError("only widths >= 3 are supported");
             }
-            if (width % 4 != 0) {
-                @compileError("only widths multiple of 4 are supported");
+            // Support widths 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, etc.
+            if (width >= 8 and width % 4 != 0) {
+                @compileError("for widths >= 8, only widths multiple of 4 are supported");
             }
-            mulM4(state);
 
-            // Calculate the "base" result as if we're doing
-            // circ(M4, M4, ...) * state.
-            var base = std.mem.zeroes([4]F.MontFieldElem);
-            inline for (0..4) |i| {
-                inline for (0..width / 4) |j| {
-                    F.add(&base[i], base[i], state[(j << 2) + i]);
-                }
-            }
-            // base has circ(M4, M4, ...)*state, add state now
-            // to add the corresponding extra M4 "through the diagonal".
+            // FIXED: Use proper circulant MDS matrix multiplication
+            // The MDS matrix is circulant, so we need to use circulant indexing
+            var new_state: State = undefined;
+
             for (0..width) |i| {
-                F.add(&state[i], state[i], base[i & 0b11]);
+                var sum: F.MontFieldElem = undefined;
+                F.toMontgomery(&sum, 0); // Initialize to zero
+
+                for (0..width) |j| {
+                    const diag_idx = (width + j - i) % width; // Circulant indexing
+                    var temp: F.MontFieldElem = undefined;
+                    F.mul(&temp, state[j], int_diagonal[diag_idx]);
+                    F.add(&sum, sum, temp);
+                }
+                new_state[i] = sum;
+            }
+
+            // Copy the result back to state
+            for (0..width) |i| {
+                state[i] = new_state[i];
             }
         }
 
