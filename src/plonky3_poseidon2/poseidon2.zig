@@ -355,8 +355,8 @@ pub const Poseidon2KoalaBear24Plonky3 = struct {
 
 test "poseidon2_16 produces deterministic output" {
     var state: [16]F = undefined;
-    for (state, 0..) |*, i| {
-        state[i] = F.fromU32(@intCast(i));
+    for (state, 0..) |*elem, i| {
+        elem.* = F.fromU32(@intCast(i));
     }
     poseidon2_16_plonky3(&state);
     for (state) |element| {
@@ -366,12 +366,11 @@ test "poseidon2_16 produces deterministic output" {
 
 test "poseidon2_24 produces deterministic output" {
     var state: [24]F = undefined;
-    for (state, 0..) |*, i| {
-        state[i] = F.fromU32(@intCast(i));
+    for (state, 0..) |*elem, i| {
+        elem.* = F.fromU32(@intCast(i));
     }
     poseidon2_24_plonky3(&state);
     for (state) |element| {
         _ = element.toU32();
     }
 }
-

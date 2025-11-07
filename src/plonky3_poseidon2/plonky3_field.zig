@@ -239,4 +239,3 @@ test "Poseidon2 field values" {
     const sum = input1.add(input2);
     _ = sum;
 }
-

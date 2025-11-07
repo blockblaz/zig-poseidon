@@ -20,6 +20,10 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
+    const lint_cmd = b.addSystemCommand(&.{ "zig", "fmt", "--check", "src" });
+    const lint_step = b.step("lint", "Run zig fmt --check on source files");
+    lint_step.dependOn(&lint_cmd.step);
+
     const main_tests = b.addTest(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
