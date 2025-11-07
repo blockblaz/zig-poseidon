@@ -6,6 +6,7 @@ pub const koalabear = @import("instances/koalabear.zig");
 pub const koalabear16_generic = @import("instances/koalabear16_generic.zig");
 pub const koalabear24_generic = @import("instances/koalabear24_generic.zig");
 pub const poseidon2 = @import("poseidon2/poseidon2.zig");
+pub const plonky3_poseidon2 = @import("plonky3_poseidon2/root.zig");
 
 // Convenience type exports
 pub const Poseidon2BabyBear = babybear16.Poseidon2BabyBear;
