@@ -40,6 +40,12 @@ pub fn MontgomeryField31(comptime modulus: u32) type {
             return montReduce(@as(u64, self.value));
         }
 
+        pub fn inverse(out: *MontFieldElem, value: MontFieldElem) void {
+            const normal = montReduce(@as(u64, value.value));
+            const inv_normal = modInverse(normal, modulus);
+            toMontgomery(out, inv_normal);
+        }
+
         fn montReduce(mont_value: u64) FieldElem {
             const tmp = mont_value + (((mont_value & 0xFFFFFFFF) * modulus_prime) & 0xFFFFFFFF) * modulus;
             std.debug.assert(tmp % R == 0);
@@ -78,4 +84,33 @@ fn euclideanAlgorithm(a: u64, b: u64) u64 {
         t += @intCast(b);
     }
     return @intCast(t);
+}
+
+fn modInverse(a: u32, m: u32) u32 {
+    if (a == 0) return 0;
+
+    var old_r = a;
+    var r = m;
+    var old_s: i32 = 1;
+    var s: i32 = 0;
+
+    while (r != 0) {
+        const quotient = old_r / r;
+        const temp_r = r;
+        r = old_r - quotient * r;
+        old_r = temp_r;
+
+        const temp_s = s;
+        s = old_s - @as(i32, @intCast(quotient)) * s;
+        old_s = temp_s;
+    }
+
+    if (old_r > 1) {
+        return 0;
+    }
+
+    if (old_s < 0) {
+        return @as(u32, @intCast(old_s + @as(i32, @intCast(m))));
+    }
+    return @as(u32, @intCast(old_s));
 }
